@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  // @default(uuid())
+  id_usuario   Int    @id @unique @default(autoincrement())
+  nome_usuario String
+  email        String @unique
+  senha_hash   String
+
+  created_at DateTime  @default(now())
+  updated_at DateTime?
+
+  perfil    Perfil? @relation(fields: [perfil_id], references: [id_perfil])
+  perfil_id Int     @default(2)
+
+  @@map("usuarios")
+}
+
+model Perfil {
+  id_perfil        Int                @id @unique @default(autoincrement())
+  nome_perfil      String             @unique
+  usuarios         Usuario[] // CamelCase
+  perfil_modulo    Perfil_modulo[]
+  transacao_modulo Transacao_modulo[]
+  funcao_modulo    Funcao_modulo[]
+
+  @@map("perfis")
+}
+
+model Perfil_modulo {
+  id_perfil_modulo Int    @id @unique @default(autoincrement())
+  perfil           Perfil @relation(fields: [perfil_id], references: [id_perfil])
+  perfil_id        Int
+  modulo           Modulo @relation(fields: [modulo_id], references: [id_modulo])
+  modulo_id        Int
+
+  @@map("perfil_modulo")
+}
+
+model Modulo {
+  id_modulo        Int                @id @unique @default(autoincrement())
+  nome_modulo      String             @unique
+  descricao_modulo String?
+  perfil_modulo    Perfil_modulo[]
+  transacao_modulo Transacao_modulo[]
+  funcao_modulo    Funcao_modulo[]
+
+  @@map("modulos")
+}
+
+model Transacao_modulo {
+  id_transacao_modulo Int       @id @unique @default(autoincrement())
+  transacao           Transacao @relation(fields: [transacao_id], references: [id_transacao])
+  transacao_id        Int
+  modulo              Modulo    @relation(fields: [modulo_id], references: [id_modulo])
+  modulo_id           Int
+  perfil              Perfil?   @relation(fields: [perfil_id], references: [id_perfil])
+  perfil_id           Int?
+
+  @@map("transacao_modulo")
+}
+
+model Transacao {
+  id_transacao        Int                @id @unique @default(autoincrement())
+  nome_transacao      String             @unique
+  descricao_transacao String?
+  transacao_modulo    Transacao_modulo[]
+
+  @@map("transacoes")
+}
+
+model Funcao {
+  id_funcao        Int             @id @unique @default(autoincrement())
+  nome_funcao      String          @unique
+  descricao_funcao String?
+  funcao_modulo    Funcao_modulo[]
+
+  @@map("funcoes")
+}
+
+model Funcao_modulo {
+  id_funcao_modulo Int     @id @unique @default(autoincrement())
+  funcao           Funcao  @relation(fields: [funcao_id], references: [id_funcao])
+  funcao_id        Int
+  modulo           Modulo  @relation(fields: [modulo_id], references: [id_modulo])
+  modulo_id        Int
+  perfil           Perfil? @relation(fields: [perfil_id], references: [id_perfil])
+  perfil_id        Int?
+
+  @@map("funcao_modulo")
+}
