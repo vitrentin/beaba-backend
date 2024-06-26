@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { randomUUID } from "node:crypto";
+import { randomInt } from "node:crypto";
 import { Environment } from "vitest";
 import "dotenv/config";
 import { execSync } from "node:child_process";
@@ -24,7 +24,7 @@ export default <Environment>(<unknown>{
   name: "prisma",
   transformMode: "ssr",
   async setup() {
-    const schema = randomUUID();
+    const schema = randomInt(100).toString();
     const databaseURL = generateDatabaseURL(schema);
     process.env.DATABASE_URL = databaseURL;
     execSync("npx prisma migrate deploy");

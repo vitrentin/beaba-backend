@@ -3,7 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { UsersRepository } from "../users-repository";
-
+interface UpdateUser {
+  id: number;
+  nome: string;
+  email: string;
+  senha: string;
+}
 export class PrismaUsersRepository implements UsersRepository {
   async findManyByUserId(userId: number, page: number) {
     const user = await prisma.usuario.findMany({
@@ -66,13 +71,25 @@ export class PrismaUsersRepository implements UsersRepository {
     });
     return user;
   }
-  // async save(data: Usuario) {
-  //   const user = await prisma.usuario.update({
-  //     where: {
-  //   id_uduario: data.id_usuario,
-  // },
-  // data,
-  //   });
-  //   return user;
-  // }
+
+  async update(data: UpdateUser) {
+    const user = await prisma.usuario.update({
+      where: {
+        id_usuario: data.id,
+      },
+      data,
+    });
+    return user;
+  }
+
+  async delete(id: number) {
+    const user = await prisma.usuario.delete({
+      where: {
+        id_usuario: id,
+      },
+    });
+    console.log(user);
+    const deletou = true;
+    return deletou;
+  }
 }

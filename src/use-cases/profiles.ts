@@ -16,15 +16,16 @@ interface ProfilesUseCaseResponse {
 export class ProfilesUseCase {
   constructor(
     private profilesRepository: ProfilesRepository
-    // private modulesRepository: ModulesRepository
-  ) {}
+  ) // private modulesRepository: ModulesRepository
+  {}
 
   async execute({
     nome_perfil,
-    // nome_modulo
-  }: ProfilesUseCaseRequest): Promise<ProfilesUseCaseResponse> {
-    const profileWithSameName =
-      await this.profilesRepository.findByName(nome_perfil);
+  }: // nome_modulo
+  ProfilesUseCaseRequest): Promise<ProfilesUseCaseResponse> {
+    const profileWithSameName = await this.profilesRepository.findByName(
+      nome_perfil
+    );
     if (profileWithSameName) {
       throw new ProfileAlreadyExistsError();
     }

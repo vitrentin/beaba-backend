@@ -19,8 +19,9 @@ export class FunctionsUseCase {
     nome_funcao,
     descricao_funcao,
   }: FunctionsUseCaseRequest): Promise<FunctionsUseCaseResponse> {
-    const functionWithSameName =
-      await this.functionsRepository.findByName(nome_funcao);
+    const functionWithSameName = await this.functionsRepository.findByName(
+      nome_funcao
+    );
     if (functionWithSameName) {
       throw new FunctionAlreadyExistsError();
     }

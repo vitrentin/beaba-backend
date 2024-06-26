@@ -24,7 +24,6 @@ export async function authenticate(
     });
     const token = await reply.jwtSign(
       {
-        // role: user.role
         perfil_id: user.perfil_id,
       },
       {
@@ -33,34 +32,45 @@ export async function authenticate(
         },
       }
     );
-    const refreshToken = await reply.jwtSign(
-      {
-        // role: user.role
-        perfil_id: user.perfil_id,
-      },
-      {
-        sign: {
-          sub: user.id_usuario.toString(),
-          expiresIn: "7d",
-        },
-      }
-    );
-    return reply
-      .setCookie("refreshToken", refreshToken, {
-        path: "/",
-        secure: true,
-        sameSite: true,
-        httpOnly: true, // Não vai ficar salvo no front
-      })
-      .status(200)
-      .send({
-        token,
-      });
-  } catch (err) {
-    if (err instanceof InvalidCredentialsError) {
-      return reply.status(400).send({ message: err.message });
+    return reply.status(200).send({
+      token,
+    });
+  } catch (error) {
+    if (error instanceof InvalidCredentialsError) {
+      return reply.status(400).send({ message: error.message });
     }
 
-    throw err;
+    throw error;
   }
 }
+//     const refreshToken = await reply.jwtSign(
+//       {
+//         // role: user.role
+//         perfil_id: user.perfil_id,
+//       },
+//       {
+//         sign: {
+//           sub: user.id_usuario.toString(),
+//           expiresIn: "7d",
+//         },
+//       }
+//     );
+//     return reply
+//       .setCookie("refreshToken", refreshToken, {
+//         path: "/",
+//         secure: true,
+//         sameSite: true,
+//         httpOnly: true, // Não vai ficar salvo no front
+//       })
+//       .status(200)
+//       .send({
+//         token,
+//       });
+//   } catch (err) {
+//     if (err instanceof InvalidCredentialsError) {
+//       return reply.status(400).send({ message: err.message });
+//     }
+
+//     throw err;
+//   }
+// }

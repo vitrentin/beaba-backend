@@ -19,8 +19,9 @@ export class ModulesUseCase {
     nome_modulo,
     descricao_modulo,
   }: ModulesUseCaseRequest): Promise<ModulesUseCaseResponse> {
-    const moduleWithSameName =
-      await this.modulesRepository.findByName(nome_modulo);
+    const moduleWithSameName = await this.modulesRepository.findByName(
+      nome_modulo
+    );
     if (moduleWithSameName) {
       throw new ModuleAlreadyExistsError();
     }

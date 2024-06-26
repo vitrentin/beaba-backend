@@ -6,15 +6,10 @@ import { ModuleAlreadyExistsError } from "@/use-cases/errors/module-already-exis
 import { makeModulesUseCase } from "@/use-cases/factories/make-module-use-case";
 
 export async function create(request: FastifyRequest, reply: FastifyReply) {
-  const createProfilesParamsSchema = z.object({
-    profilesId: z.number(),
-  });
-
   const createModulesBodySchema = z.object({
     nome_modulo: z.string(),
     descricao_modulo: z.string().nullable(),
   });
-  const { profilesId } = createProfilesParamsSchema.parse(request.params);
   const { nome_modulo, descricao_modulo } = createModulesBodySchema.parse(
     request.body
   );

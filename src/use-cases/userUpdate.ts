@@ -2,40 +2,43 @@
 import { UserAlreadyExistsError } from "./errors/user-already-exists-error";
 import { UsersRepository } from "@/repositories/users-repository";
 import { Usuario } from "@prisma/client";
-import { hash } from "bcryptjs";
 
-interface RegisterUseCaseRequest {
+interface UpdateUseCaseRequest {
+  id: number;
   nome: string;
   email: string;
   senha: string;
 }
 
-interface RegisterUseCaseResponse {
+interface UpdateUseCaseResponse {
   user: Usuario;
 }
 
-// SOLID
-// D - Dependency Inversion Principle
-// Princípio de Inversão de Dependência
-export class RegisterUseCase {
+export class UpdateUseCase {
   constructor(private usersRepository: UsersRepository) {}
 
   async execute({
+    id,
     nome,
     email,
     senha,
-  }: RegisterUseCaseRequest): Promise<RegisterUseCaseResponse> {
-    const senha_hash = await hash(senha, 3);
+  }: UpdateUseCaseRequest): Promise<UpdateUseCaseResponse> {
+    const user_id = await this.usersRepository.findById(id);
+    if (!user_id) {
+      throw new Error("User not found");
+    }
     const userWithSameEmail = await this.usersRepository.findByEmail(email);
 
     if (userWithSameEmail) {
       throw new UserAlreadyExistsError();
     }
-    const user = await this.usersRepository.create({
-      nome_usuario: nome,
+    const user = await this.usersRepository.update({
+      id,
+      nome,
       email,
-      senha_hash,
+      senha,
     });
+
     return { user };
   }
 }

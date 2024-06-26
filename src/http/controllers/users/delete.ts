@@ -2,32 +2,32 @@ import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 
-export async function deleteModules(app: FastifyInstance) {
-  app.delete("/modules/:moduleId", async (request, reply) => {
-    const deleteModuleParam = z.object({
-      moduleId: z
+export async function deleteUsers(app: FastifyInstance) {
+  app.delete("/users/:userId", async (request, reply) => {
+    const deleteUserParam = z.object({
+      userId: z
         .string()
         .transform((val) => parseInt(val, 10))
         .refine((val) => !isNaN(val), {
-          message: "moduleId must be a valid number",
+          message: "userId must be a valid number",
         }),
     });
 
     try {
-      const { moduleId } = deleteModuleParam.parse(request.params);
-      const module = await prisma.modulo.findUnique({
+      const { userId } = deleteUserParam.parse(request.params);
+      const user = await prisma.usuario.findUnique({
         where: {
-          id_modulo: moduleId,
+          id_usuario: userId,
         },
       });
 
-      if (!module) {
-        return reply.code(404).send({ error: "Module not found" });
+      if (!user) {
+        return reply.code(404).send({ error: "User not found" });
       }
 
-      await prisma.modulo.delete({
+      await prisma.usuario.delete({
         where: {
-          id_modulo: moduleId,
+          id_usuario: userId,
         },
       });
 

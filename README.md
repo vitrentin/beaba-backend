@@ -231,58 +231,8 @@ const response = await request(app.server)
 
 ```
 
-## Fazer ocódigo funcionar em js
-
-node build/server.js
-
-Github CLI
-gh repo view -w
-
-Obs. 1: O Render há um tempo vem solicitando uma configuração a mais no projeto par realizar o deploy
-corretamente. Na configuração de listen no arquivo server.ts, adicione a seguinte validação:
-
-host: ("RENDER" in process.env) ? '0.0.0.0' : 'localhost',
-Obs. 2: Na plataforma Render, a variável ambiente para identificar a porta da aplicação precisa ser
-exatamente PORT e não pode ser definida nas configurações do serviço, pois é a própria plataforma que
-adiciona esse valor (não é visível).
-
-Obs. 3: Nessa aula, foi configurado a engines do node no package.json com o valor de >=18, mas essa
-configuração faz com que o Render utilize versões recentes, como a 21. Então deve ser trocado para "node":
-"18", forçando assim a utilizar a versão 18 do Node.js.
-
-Nessa aula você aprenderá como configurar a aplicação para suportar dois bancos de dados: SQLite (para
-desenvolvimento) e PostgreSQL (para produção). Além disso, você verá como fazer o deploy na plataforma
-Render, configurando o banco de dados PostgreSQL e variáveis ambiente.
-
-Build Command: npm install && npm run knex -- migrate:latest && npm run build
-
-Start Command: node build/server.js
+## Integrando Front e Backend
 
 ```sh
-    npm install jsonwebtoken
+  npm install fastify-cors
 ```
-
-src/configs/auth.ts
-
-module.exports = {
-jwt: {
-secret: "default",
-expiresIn: "Id"
-}
-}
-No controller de autenticação:
-import {AuthConfig} from "caminho"
-const AuthConfig = require("caminho")
-import {sign } from "jsonwebtoken"
-const sign = require("jsonwebtoken")
-
-const {secret, expiresIn} = authConfig.jwt
-const token = sign({}, secret, {
-subject: String(user.id),
-expiresIn
-})
-return response.json({user, token})
-#   b e a b a - b a c k e n d  
- #   b e a b a - b a c k e n d  
- #   b e a b a - b a c k e n d  
- 
