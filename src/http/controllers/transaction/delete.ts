@@ -1,42 +1,47 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { verifyJWT } from "@/http/middlewares/verify-jwt";
 
 export async function deleteTransaction(app: FastifyInstance) {
-  app.delete("/transactions/:transactionId", async (request, reply) => {
-    const deleteTransactionParam = z.object({
-      transactionId: z
-        .string()
-        .transform((val) => parseInt(val, 10))
-        .refine((val) => !isNaN(val), {
-          message: "transactionId must be a valid number",
-        }),
-    });
-
-    try {
-      const { transactionId } = deleteTransactionParam.parse(request.params);
-      const transaction = await prisma.transacao.findUnique({
-        where: {
-          id_transacao: transactionId,
-        },
+  app.delete(
+    "/transactions/:transactionId",
+    { onRequest: [verifyJWT] },
+    async (request, reply) => {
+      const deleteTransactionParam = z.object({
+        transactionId: z
+          .string()
+          .transform((val) => parseInt(val, 10))
+          .refine((val) => !isNaN(val), {
+            message: "transactionId must be a valid number",
+          }),
       });
 
-      if (!transaction) {
-        return reply.code(404).send({ error: "Transaction not found" });
-      }
+      try {
+        const { transactionId } = deleteTransactionParam.parse(request.params);
+        const transaction = await prisma.transacao.findUnique({
+          where: {
+            id_transacao: transactionId,
+          },
+        });
 
-      await prisma.transacao.delete({
-        where: {
-          id_transacao: transactionId,
-        },
-      });
+        if (!transaction) {
+          return reply.code(404).send({ error: "Transaction not found" });
+        }
 
-      return reply.code(204).send();
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return reply.code(400).send({ error: error.errors });
+        await prisma.transacao.delete({
+          where: {
+            id_transacao: transactionId,
+          },
+        });
+
+        return reply.code(204).send();
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return reply.code(400).send({ error: error.errors });
+        }
+        return reply.code(500).send({ error: "Internal Server Error" });
       }
-      return reply.code(500).send({ error: "Internal Server Error" });
     }
-  });
+  );
 }

@@ -11,7 +11,7 @@ export async function usersRoutes(app: FastifyInstance) {
   app.post("/sessions", authenticate);
 
   // Posts
-  app.post("/users", register); // { onRequest: [verifyUserProfile(1)] },
+  app.post("/users", { onRequest: [verifyJWT] }, register); // { onRequest: [verifyUserProfile(1)] },
 
   // app.patch("/token/refresh", refresh);
 

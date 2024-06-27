@@ -6,7 +6,7 @@ import { create } from "./create";
 export async function modulesRoutes(app: FastifyInstance) {
   app.addHook("onRequest", verifyJWT);
 
-  app.get("/modules/search", search);
-  app.post("/modules", create);
+  app.get("/modules/search", { onRequest: [verifyJWT] }, search);
+  app.post("/modules", { onRequest: [verifyJWT] }, create);
   // app.post("/profiles/:profilesId/modules", create);
 }

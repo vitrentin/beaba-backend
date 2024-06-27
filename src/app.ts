@@ -18,6 +18,11 @@ import { deleteTransaction } from "./http/controllers/transaction/delete";
 import { getTransactions } from "./http/controllers/transaction/showAllTransactions";
 import { deleteFunction } from "./http/controllers/function/delete";
 import { getFunctions } from "./http/controllers/function/showAllFunction";
+import { updateUsers } from "./http/controllers/users/update";
+import { updateModules } from "./http/controllers/module/update";
+import { updateFuctions } from "./http/controllers/function/update";
+import { updateTransactions } from "./http/controllers/transaction/update";
+import { updateProfiles } from "./http/controllers/profiles/update";
 
 export const app = fastify();
 
@@ -46,18 +51,23 @@ app.register(fastifyJwt, {
 
 app.register(deleteUsers);
 app.register(getUsers);
+app.register(updateUsers);
 
 app.register(deleteProfiles);
 app.register(getProfiles);
+app.register(updateProfiles);
 
 app.register(deleteModules);
 app.register(getModules);
+app.register(updateModules);
 
 app.register(deleteTransaction);
 app.register(getTransactions);
+app.register(updateTransactions);
 
 app.register(deleteFunction);
 app.register(getFunctions);
+app.register(updateFuctions);
 
 app.register(fastifyCookie);
 app.register(usersRoutes);
