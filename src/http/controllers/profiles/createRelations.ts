@@ -3,13 +3,12 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { verifyJWT } from "@/http/middlewares/verify-jwt";
 
-export async function deleteProfiles(app: FastifyInstance) {
-  // Rota para deletar um perfil e suas associações
-  app.delete(
-    "/profiles/:profileId",
+export async function createProfileModules(app: FastifyInstance) {
+  app.post(
+    "/profileModules/:profileId",
     { onRequest: [verifyJWT] },
     async (request, reply) => {
-      const deleteProfileParam = z.object({
+      const updateProfileParam = z.object({
         profileId: z
           .string()
           .transform((val) => parseInt(val, 10))
@@ -18,8 +17,14 @@ export async function deleteProfiles(app: FastifyInstance) {
           }),
       });
 
+      const updateProfileBody = z.object({
+        nome_modulo: z.string(),
+      });
+
       try {
-        const { profileId } = deleteProfileParam.parse(request.params);
+        const { profileId } = updateProfileParam.parse(request.params);
+        const { nome_modulo } = updateProfileBody.parse(request.body);
+
         // Verifica se o perfil existe
         const profile = await prisma.perfil.findUnique({
           where: {
@@ -31,22 +36,27 @@ export async function deleteProfiles(app: FastifyInstance) {
           return reply.code(404).send({ error: "Profile not found" });
         }
 
-        // Deleta todas as associações na tabela perfil_modulo
-        await prisma.perfil_modulo.deleteMany({
+        // Verifica se o módulo existe
+        const modulo = await prisma.modulo.findUnique({
           where: {
-            perfil_id: profileId,
+            nome_modulo,
           },
         });
 
-        // Deleta o perfil
-        await prisma.perfil.delete({
-          where: {
-            id_perfil: profileId,
+        if (!modulo) {
+          return reply.code(404).send({ error: "Module not found" });
+        }
+
+        // Cria a associação na tabela perfil_modulo
+        await prisma.perfil_modulo.create({
+          data: {
+            perfil_id: profileId,
+            modulo_id: modulo.id_modulo,
           },
         });
 
         return reply.code(200).send({
-          message: "Profile and its associations deleted successfully",
+          message: "Profile-module relationship created successfully",
         });
       } catch (error) {
         if (error instanceof z.ZodError) {

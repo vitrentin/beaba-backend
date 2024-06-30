@@ -3,30 +3,31 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { verifyJWT } from "../../middlewares/verify-jwt";
 
-export async function searchModules(app: FastifyInstance) {
+export async function searchUsers(app: FastifyInstance) {
   app.post(
-    "/search/modules",
+    "/search/users",
     { onRequest: [verifyJWT] },
     async (request, reply) => {
-      const searchModuleBody = z.object({
-        search_term: z.string().optional(),
+      const searchUserBody = z.object({
+        nome_usuario: z.string().optional(),
+        email: z.string().optional(),
       });
 
       try {
-        const { search_term } = searchModuleBody.parse(request.body);
+        const { nome_usuario, email } = searchUserBody.parse(request.body);
 
-        const modules = await prisma.modulo.findMany({
+        const users = await prisma.usuario.findMany({
           where: {
             OR: [
               {
-                nome_modulo: {
-                  contains: search_term,
+                nome_usuario: {
+                  contains: nome_usuario,
                   mode: "insensitive",
                 },
               },
               {
-                descricao_modulo: {
-                  contains: search_term,
+                email: {
+                  contains: email,
                   mode: "insensitive",
                 },
               },
@@ -34,7 +35,7 @@ export async function searchModules(app: FastifyInstance) {
           },
         });
 
-        return reply.status(200).send(modules);
+        return reply.status(200).send(users);
       } catch (error) {
         if (error instanceof z.ZodError) {
           return reply.status(400).send({ error: error.errors });

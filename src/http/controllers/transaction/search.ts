@@ -1,23 +1,53 @@
-/* eslint-disable prettier/prettier */
-import { makeSearchTransactionsUseCase } from "@/use-cases/factories/make-search-transactions-use-case";
-import { FastifyRequest, FastifyReply } from "fastify";
+import { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { prisma } from "@/lib/prisma";
+import { verifyJWT } from "../../middlewares/verify-jwt";
 
-export async function search(request: FastifyRequest, reply: FastifyReply) {
-  const searchTransactionsQuerySchema = z.object({
-    query: z.string(),
-    page: z.coerce.number().min(1).default(1),
-  });
-  const { query, page } = searchTransactionsQuerySchema.parse(request.query);
+export async function searchTransactions(app: FastifyInstance) {
+  app.post(
+    "/search/transactions",
+    { onRequest: [verifyJWT] },
+    async (request, reply) => {
+      const searchTransactionBody = z.object({
+        search_term: z.string().optional(),
+      });
 
-  const searchTransactionsUseCase = makeSearchTransactionsUseCase();
+      try {
+        const { search_term } = searchTransactionBody.parse(request.body);
 
-  const { transaction } = await searchTransactionsUseCase.execute({
-    query,
-    page,
-  });
+        const transactions = await prisma.transacao.findMany({
+          where: {
+            OR: [
+              {
+                nome_transacao: {
+                  contains: search_term,
+                  mode: "insensitive",
+                },
+              },
+              {
+                descricao_transacao: {
+                  contains: search_term,
+                  mode: "insensitive",
+                },
+              },
+            ],
+          },
+          include: {
+            transacao_modulo: {
+              include: {
+                modulo: true,
+              },
+            },
+          },
+        });
 
-  return reply.status(200).send({
-    transaction,
-  });
+        return reply.status(200).send(transactions);
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return reply.status(400).send({ error: error.errors });
+        }
+        return reply.status(500).send({ error: "Internal Server Error" });
+      }
+    }
+  );
 }

@@ -1,23 +1,43 @@
-/* eslint-disable prettier/prettier */
-import { makeSearchProfilesUseCase } from "@/use-cases/factories/make-search-profiles-use-case";
-import { FastifyRequest, FastifyReply } from "fastify";
+import { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { prisma } from "@/lib/prisma";
+import { verifyJWT } from "../../middlewares/verify-jwt";
 
-export async function search(request: FastifyRequest, reply: FastifyReply) {
-  const searchProfilesQuerySchema = z.object({
-    query: z.string(),
-    page: z.coerce.number().min(1).default(1),
-  });
-  const { query, page } = searchProfilesQuerySchema.parse(request.query);
+export async function searchProfiles(app: FastifyInstance) {
+  app.post(
+    "/search/profiles",
+    { onRequest: [verifyJWT] },
+    async (request, reply) => {
+      const searchProfileBody = z.object({
+        nome_perfil: z.string().optional(),
+      });
 
-  const searchProfilesUseCase = makeSearchProfilesUseCase();
+      try {
+        const { nome_perfil } = searchProfileBody.parse(request.body);
 
-  const { profile } = await searchProfilesUseCase.execute({
-    query,
-    page,
-  });
+        const profiles = await prisma.perfil.findMany({
+          where: {
+            nome_perfil: {
+              contains: nome_perfil,
+              mode: "insensitive",
+            },
+          },
+          include: {
+            perfil_modulo: {
+              include: {
+                modulo: true,
+              },
+            },
+          },
+        });
 
-  return reply.status(200).send({
-    profile,
-  });
+        return reply.status(200).send(profiles);
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return reply.status(400).send({ error: error.errors });
+        }
+        return reply.status(500).send({ error: "Internal Server Error" });
+      }
+    }
+  );
 }

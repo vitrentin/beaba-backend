@@ -8,8 +8,29 @@ export async function getTransactions(app: FastifyInstance) {
     "/transactions",
     { onRequest: [verifyJWT] },
     async (request, reply) => {
-      const transactions = await prisma.transacao.findMany();
-      return reply.status(200).send(transactions);
+      try {
+        const transactions = await prisma.transacao.findMany({
+          include: {
+            transacao_modulo: {
+              include: {
+                modulo: true,
+              },
+            },
+          },
+        });
+        // Transformar os dados para incluir a informação dos módulos
+        const transactionsWithModules = transactions.map((transactions) => ({
+          ...transactions,
+          modules: transactions.transacao_modulo
+            .map((tm) => tm.modulo.nome_modulo)
+            .join(", "),
+        }));
+
+        return reply.send(transactionsWithModules);
+      } catch (error) {
+        console.error("Erro ao buscar transações:", error);
+        return reply.code(500).send({ error: "Erro ao buscar transações" });
+      }
     }
   );
 

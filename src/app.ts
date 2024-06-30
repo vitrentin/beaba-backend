@@ -23,11 +23,22 @@ import { updateModules } from "./http/controllers/module/update";
 import { updateFuctions } from "./http/controllers/function/update";
 import { updateTransactions } from "./http/controllers/transaction/update";
 import { updateProfiles } from "./http/controllers/profiles/update";
+import { searchUsers } from "./http/controllers/users/search";
+import { resetPasswordWithToken } from "./http/controllers/users/forgotEmail";
+import { createProfileModules } from "./http/controllers/profiles/createRelations";
+import { createProfileModule } from "./http/controllers/profiles/createRelationship";
+import { createProfile } from "./http/controllers/profiles/crud";
+import { createTransaction } from "./http/controllers/transaction/crud";
+import { createFunction } from "./http/controllers/function/crud";
+import { searchProfiles } from "./http/controllers/profiles/search";
+import { searchTransactions } from "./http/controllers/transaction/search";
+import { searchFunctions } from "./http/controllers/function/search";
+import { searchModules } from "./http/controllers/module/search";
 
 export const app = fastify();
 
 app.register(require("@fastify/cors"), {
-  origin: "*",
+  origin: "http://localhost:5173",
   allowedHeaders: [
     "Origin",
     "X-Requested-With",
@@ -52,23 +63,34 @@ app.register(fastifyJwt, {
 app.register(deleteUsers);
 app.register(getUsers);
 app.register(updateUsers);
+app.register(searchUsers);
 
 app.register(deleteProfiles);
 app.register(getProfiles);
 app.register(updateProfiles);
+app.register(createProfileModules);
+app.register(createProfileModule);
+app.register(createProfile);
+app.register(searchProfiles);
 
 app.register(deleteModules);
 app.register(getModules);
 app.register(updateModules);
+app.register(searchModules);
 
 app.register(deleteTransaction);
 app.register(getTransactions);
 app.register(updateTransactions);
+app.register(createTransaction);
+app.register(searchTransactions);
 
 app.register(deleteFunction);
 app.register(getFunctions);
 app.register(updateFuctions);
+app.register(createFunction);
+app.register(searchFunctions);
 
+app.register(resetPasswordWithToken);
 app.register(fastifyCookie);
 app.register(usersRoutes);
 app.register(modulesRoutes);

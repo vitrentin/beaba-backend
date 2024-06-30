@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable prettier/prettier */
 import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { ModuleAlreadyExistsError } from "@/use-cases/errors/module-already-exists-error";

@@ -5,8 +5,29 @@ import { verifyJWT } from "@/http/middlewares/verify-jwt";
 
 export async function getFunctions(app: FastifyInstance) {
   app.get("/functions", { onRequest: [verifyJWT] }, async (request, reply) => {
-    const functions = await prisma.funcao.findMany();
-    return reply.status(200).send(functions);
+    try {
+      const functions = await prisma.funcao.findMany({
+        include: {
+          funcao_modulo: {
+            include: {
+              modulo: true,
+            },
+          },
+        },
+      });
+      // Transformar os dados para incluir a informação dos módulos
+      const functionsWithModules = functions.map((functions) => ({
+        ...functions,
+        modules: functions.funcao_modulo
+          .map((fm) => fm.modulo.nome_modulo)
+          .join(", "),
+      }));
+
+      return reply.send(functionsWithModules);
+    } catch (error) {
+      console.error("Erro ao buscar funções:", error);
+      return reply.code(500).send({ error: "Erro ao buscar funções" });
+    }
   });
 
   app.get(
