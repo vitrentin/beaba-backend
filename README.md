@@ -13,6 +13,7 @@
 - Bcrypt
 - Zod
 - Python
+- Insomnia
 
 ## Pré-requisitos
 

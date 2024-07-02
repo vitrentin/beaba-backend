@@ -8,6 +8,7 @@ type UpdateUserInput = {
   nome_usuario?: string;
   email?: string;
   senha?: string;
+  perfil_id?: number;
 };
 
 export async function updateUsers(app: FastifyInstance) {
@@ -28,6 +29,7 @@ export async function updateUsers(app: FastifyInstance) {
         nome_usuario: z.string().optional(),
         email: z.string().email().optional(),
         senha: z.string().optional(),
+        perfil_id: z.number().optional(),
       });
 
       try {
@@ -69,6 +71,9 @@ export async function updateUsers(app: FastifyInstance) {
         if (userData.senha) {
           const senha_hash = await hash(userData.senha, 3);
           dataToUpdate.senha = senha_hash;
+        }
+        if (userData.perfil_id !== undefined) {
+          dataToUpdate.perfil_id = userData.perfil_id;
         }
 
         await prisma.usuario.update({

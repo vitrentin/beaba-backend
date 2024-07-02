@@ -8,6 +8,7 @@ interface RegisterUseCaseRequest {
   nome: string;
   email: string;
   senha: string;
+  perfil_id: number;
 }
 
 interface RegisterUseCaseResponse {
@@ -24,6 +25,7 @@ export class RegisterUseCase {
     nome,
     email,
     senha,
+    perfil_id,
   }: RegisterUseCaseRequest): Promise<RegisterUseCaseResponse> {
     const senha_hash = await hash(senha, 3);
     const userWithSameEmail = await this.usersRepository.findByEmail(email);
@@ -35,6 +37,9 @@ export class RegisterUseCase {
       nome_usuario: nome,
       email,
       senha_hash,
+      perfil: {
+        connect: { id_perfil: perfil_id },
+      },
     });
     return { user };
   }

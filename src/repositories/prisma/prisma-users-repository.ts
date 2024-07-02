@@ -66,9 +66,22 @@ export class PrismaUsersRepository implements UsersRepository {
   }
 
   async create(data: Prisma.UsuarioCreateInput) {
+    const userData: Prisma.UsuarioCreateInput = {
+      nome_usuario: data.nome_usuario,
+      email: data.email,
+      senha_hash: data.senha_hash,
+    };
+
+    if (data.perfil && data.perfil.connect) {
+      userData.perfil = {
+        connect: { id_perfil: data.perfil.connect.id_perfil },
+      };
+    }
+
     const user = await prisma.usuario.create({
-      data,
+      data: userData,
     });
+
     return user;
   }
 

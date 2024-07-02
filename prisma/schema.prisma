@@ -15,10 +15,10 @@ model Usuario {
   senha_hash   String
 
   created_at DateTime  @default(now())
-  updated_at DateTime?
+  updated_at DateTime? @updatedAt
 
-  perfil    Perfil? @relation(fields: [perfil_id], references: [id_perfil])
   perfil_id Int     @default(2)
+  perfil    Perfil? @relation(fields: [perfil_id], references: [id_perfil])
 
   @@map("usuarios")
 }
