@@ -7,6 +7,9 @@ export async function getProfiles(app: FastifyInstance) {
   app.get("/profiles", { onRequest: [verifyJWT] }, async (request, reply) => {
     try {
       const profiles = await prisma.perfil.findMany({
+        orderBy: {
+          id_perfil: "asc",
+        },
         include: {
           perfil_modulo: {
             include: {

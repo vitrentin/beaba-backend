@@ -27,9 +27,9 @@ import { searchUsers } from "./http/controllers/users/search";
 import { resetPasswordWithToken } from "./http/controllers/users/forgotEmail";
 import { createProfileModules } from "./http/controllers/profiles/createRelations";
 import { createProfileModule } from "./http/controllers/profiles/createRelationship";
-import { createProfile } from "./http/controllers/profiles/crud";
-import { createTransaction } from "./http/controllers/transaction/crud";
-import { createFunction } from "./http/controllers/function/crud";
+import { createProfile } from "./http/controllers/profiles/create";
+import { createTransaction } from "./http/controllers/transaction/create";
+import { createFunction } from "./http/controllers/function/create";
 import { searchProfiles } from "./http/controllers/profiles/search";
 import { searchTransactions } from "./http/controllers/transaction/search";
 import { searchFunctions } from "./http/controllers/function/search";
@@ -38,7 +38,7 @@ import { searchModules } from "./http/controllers/module/search";
 export const app = fastify();
 
 app.register(require("@fastify/cors"), {
-  origin: "http://localhost:5173",
+  origin: "*",
   allowedHeaders: [
     "Origin",
     "X-Requested-With",

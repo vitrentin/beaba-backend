@@ -40,8 +40,8 @@ export async function updateUsers(app: FastifyInstance) {
               email: userData.email,
             },
           });
-
-          if (emailExists && emailExists.id_usuario !== userId) {
+          // && emailExists.id_usuario !== userId
+          if (emailExists) {
             return reply.code(400).send({ error: "Email already in use" });
           }
         }
@@ -56,14 +56,19 @@ export async function updateUsers(app: FastifyInstance) {
           return reply.code(404).send({ error: "User not found" });
         }
 
-        const dataToUpdate: any = {
-          nome_usuario: userData.nome_usuario,
-          email: userData.email,
-        };
+        const dataToUpdate: any = {};
+
+        if (userData.nome_usuario !== undefined) {
+          dataToUpdate.nome_usuario = userData.nome_usuario;
+        }
+
+        if (userData.email !== undefined) {
+          dataToUpdate.email = userData.email;
+        }
 
         if (userData.senha) {
           const senha_hash = await hash(userData.senha, 3);
-          dataToUpdate.senha_hash = senha_hash;
+          dataToUpdate.senha = senha_hash;
         }
 
         await prisma.usuario.update({

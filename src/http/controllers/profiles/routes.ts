@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { verifyJWT } from "@/http/middlewares/verify-jwt";
-import { create } from "./create";
+import { create } from "./solid";
 
 export async function profilesRoutes(app: FastifyInstance) {
   app.addHook("onRequest", verifyJWT);

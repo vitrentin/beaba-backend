@@ -5,7 +5,6 @@ import { verifyJWT } from "@/http/middlewares/verify-jwt";
 
 type UpdateProfileInput = {
   nome_perfil?: string;
-  modulo_associado?: string;
 };
 
 export async function updateProfiles(app: FastifyInstance) {
@@ -24,7 +23,6 @@ export async function updateProfiles(app: FastifyInstance) {
 
       const updateProfileBody = z.object({
         nome_perfil: z.string().optional(),
-        modulo_associado: z.string().optional(),
       });
 
       try {
@@ -57,7 +55,6 @@ export async function updateProfiles(app: FastifyInstance) {
 
         const dataToUpdate: any = {
           nome_perfil: profileData.nome_perfil,
-          modulo_associado: profileData.modulo_associado,
         };
 
         await prisma.perfil.update({
@@ -70,6 +67,48 @@ export async function updateProfiles(app: FastifyInstance) {
         return reply
           .code(200)
           .send({ message: "Profile updated successfully" });
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return reply.code(400).send({ error: error.errors });
+        }
+        console.error("Internal Server Error:", error);
+        return reply.code(500).send({ error: "Internal Server Error" });
+      }
+    }
+  );
+
+  app.delete(
+    "/profiles/:profileId/modules/:moduleId",
+    { onRequest: [verifyJWT] },
+    async (request, reply) => {
+      const deleteModuleParam = z.object({
+        profileId: z
+          .string()
+          .transform((val) => parseInt(val, 10))
+          .refine((val) => !isNaN(val), {
+            message: "profileId must be a valid number",
+          }),
+        moduleId: z
+          .string()
+          .transform((val) => parseInt(val, 10))
+          .refine((val) => !isNaN(val), {
+            message: "moduleId must be a valid number",
+          }),
+      });
+
+      try {
+        const { profileId, moduleId } = deleteModuleParam.parse(request.params);
+
+        await prisma.perfil_modulo.deleteMany({
+          where: {
+            perfil_id: profileId,
+            modulo_id: moduleId,
+          },
+        });
+
+        return reply
+          .code(200)
+          .send({ message: "Module removed from profile successfully" });
       } catch (error) {
         if (error instanceof z.ZodError) {
           return reply.code(400).send({ error: error.errors });

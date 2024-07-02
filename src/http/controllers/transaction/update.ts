@@ -6,7 +6,6 @@ import { verifyJWT } from "@/http/middlewares/verify-jwt";
 type UpdateTransactionInput = {
   nome_transacao?: string;
   descricao_transacao?: string;
-  modulo_associado?: string;
 };
 
 export async function updateTransactions(app: FastifyInstance) {
@@ -26,7 +25,6 @@ export async function updateTransactions(app: FastifyInstance) {
       const updateTransactionBody = z.object({
         nome_transacao: z.string().optional(),
         descricao_transacao: z.string().optional(),
-        modulo_associado: z.string().optional(),
       });
 
       try {
@@ -61,7 +59,6 @@ export async function updateTransactions(app: FastifyInstance) {
         const dataToUpdate: any = {
           nome_transacao: transactionData.nome_transacao,
           descricao_transacao: transactionData.descricao_transacao,
-          modulo_associado: transactionData.modulo_associado,
         };
 
         await prisma.transacao.update({
@@ -74,6 +71,50 @@ export async function updateTransactions(app: FastifyInstance) {
         return reply
           .code(200)
           .send({ message: "Transaction updated successfully" });
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return reply.code(400).send({ error: error.errors });
+        }
+        console.error("Internal Server Error:", error);
+        return reply.code(500).send({ error: "Internal Server Error" });
+      }
+    }
+  );
+
+  app.delete(
+    "/transactions/:transactionId/modules/:moduleId",
+    { onRequest: [verifyJWT] },
+    async (request, reply) => {
+      const deleteModuleParam = z.object({
+        transactionId: z
+          .string()
+          .transform((val) => parseInt(val, 10))
+          .refine((val) => !isNaN(val), {
+            message: "transactionId must be a valid number",
+          }),
+        moduleId: z
+          .string()
+          .transform((val) => parseInt(val, 10))
+          .refine((val) => !isNaN(val), {
+            message: "moduleId must be a valid number",
+          }),
+      });
+
+      try {
+        const { transactionId, moduleId } = deleteModuleParam.parse(
+          request.params
+        );
+
+        await prisma.transacao_modulo.deleteMany({
+          where: {
+            transacao_id: transactionId,
+            modulo_id: moduleId,
+          },
+        });
+
+        return reply
+          .code(200)
+          .send({ message: "Module removed from transaction successfully" });
       } catch (error) {
         if (error instanceof z.ZodError) {
           return reply.code(400).send({ error: error.errors });

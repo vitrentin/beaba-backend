@@ -10,6 +10,9 @@ export async function getTransactions(app: FastifyInstance) {
     async (request, reply) => {
       try {
         const transactions = await prisma.transacao.findMany({
+          orderBy: {
+            id_transacao: "asc",
+          },
           include: {
             transacao_modulo: {
               include: {

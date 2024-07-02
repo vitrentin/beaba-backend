@@ -7,6 +7,9 @@ export async function getFunctions(app: FastifyInstance) {
   app.get("/functions", { onRequest: [verifyJWT] }, async (request, reply) => {
     try {
       const functions = await prisma.funcao.findMany({
+        orderBy: {
+          id_funcao: "asc",
+        },
         include: {
           funcao_modulo: {
             include: {

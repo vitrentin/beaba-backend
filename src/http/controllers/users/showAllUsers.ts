@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { verifyJWT } from "../../middlewares/verify-jwt";
+
 export async function getUsers(app: FastifyInstance) {
   app.get("/users", { onRequest: [verifyJWT] }, async (request, reply) => {
     try {

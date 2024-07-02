@@ -6,7 +6,6 @@ import { verifyJWT } from "@/http/middlewares/verify-jwt";
 type UpdateFunctionInput = {
   nome_funcao?: string;
   descricao_funcao?: string;
-  modulo_associado?: string;
 };
 
 export async function updateFuctions(app: FastifyInstance) {
@@ -26,7 +25,6 @@ export async function updateFuctions(app: FastifyInstance) {
       const updateFunctionBody = z.object({
         nome_funcao: z.string().optional(),
         descricao_funcao: z.string().optional(),
-        modulo_associado: z.string().optional(),
       });
 
       try {
@@ -60,7 +58,6 @@ export async function updateFuctions(app: FastifyInstance) {
         const dataToUpdate: any = {
           nome_funcao: functionData.nome_funcao,
           descricao_funcao: functionData.descricao_funcao,
-          modulo_associado: functionData.modulo_associado,
         };
 
         await prisma.funcao.update({
@@ -73,6 +70,50 @@ export async function updateFuctions(app: FastifyInstance) {
         return reply
           .code(200)
           .send({ message: "Function updated successfully" });
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return reply.code(400).send({ error: error.errors });
+        }
+        console.error("Internal Server Error:", error);
+        return reply.code(500).send({ error: "Internal Server Error" });
+      }
+    }
+  );
+
+  app.delete(
+    "/functions/:functionId/modules/:moduleId",
+    { onRequest: [verifyJWT] },
+    async (request, reply) => {
+      const deleteModuleParam = z.object({
+        functionId: z
+          .string()
+          .transform((val) => parseInt(val, 10))
+          .refine((val) => !isNaN(val), {
+            message: "functionId must be a valid number",
+          }),
+        moduleId: z
+          .string()
+          .transform((val) => parseInt(val, 10))
+          .refine((val) => !isNaN(val), {
+            message: "moduleId must be a valid number",
+          }),
+      });
+
+      try {
+        const { functionId, moduleId } = deleteModuleParam.parse(
+          request.params
+        );
+
+        await prisma.funcao_modulo.deleteMany({
+          where: {
+            funcao_id: functionId,
+            modulo_id: moduleId,
+          },
+        });
+
+        return reply
+          .code(200)
+          .send({ message: "Module removed from function successfully" });
       } catch (error) {
         if (error instanceof z.ZodError) {
           return reply.code(400).send({ error: error.errors });

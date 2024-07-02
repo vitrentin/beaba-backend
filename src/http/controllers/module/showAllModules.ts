@@ -5,7 +5,11 @@ import { verifyJWT } from "@/http/middlewares/verify-jwt";
 
 export async function getModules(app: FastifyInstance) {
   app.get("/modules", { onRequest: [verifyJWT] }, async (request, reply) => {
-    const modules = await prisma.modulo.findMany();
+    const modules = await prisma.modulo.findMany({
+      orderBy: {
+        id_modulo: "asc",
+      },
+    });
     return reply.status(200).send(modules);
   });
 
