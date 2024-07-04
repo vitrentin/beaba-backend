@@ -2,47 +2,46 @@ import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
-export async function resetPasswordWithToken(app: FastifyInstance) {
-  app.put("/reset-password", async (request, reply) => {
-    const bodySchema = z.object({
-      email: z.string().email(),
-      senha: z.string().min(6),
-      confirmarSenha: z.string().min(6),
+const SECRET_KEY = "beabaaleatorio";
+
+export async function resetPassword(app: FastifyInstance) {
+  app.post("/reset-password", async (request, reply) => {
+    const resetPasswordBody = z.object({
       token: z.string(),
+      email: z.string().email(),
+      novaSenha: z.string().min(6),
     });
 
     try {
-      const { email, senha, confirmarSenha, token } = bodySchema.parse(
-        request.body
-      );
+      const { token, email, novaSenha } = resetPasswordBody.parse(request.body);
 
-      if (senha !== confirmarSenha) {
-        return reply.code(400).send({ error: "As senhas não coincidem" });
+      let decodedToken: JwtPayload;
+      try {
+        decodedToken = jwt.verify(token, SECRET_KEY) as JwtPayload;
+      } catch (error) {
+        return reply.code(400).send({ error: "Invalid or expired token" });
       }
 
-      const isTokenValid = await verifyToken(token, email);
-      if (!isTokenValid) {
-        return reply.code(400).send({ error: "Token inválido ou expirado" });
+      if (decodedToken.email !== email) {
+        return reply
+          .code(400)
+          .send({ error: "Invalid token for the provided email" });
       }
 
-      const user = await prisma.usuario.findUnique({
-        where: { email },
-      });
+      const senha_hash = await hash(novaSenha, 3);
 
-      if (!user) {
-        return reply.code(404).send({ error: "Usuário não encontrado" });
-      }
-
-      const senha_hash = await hash(senha, 3);
-
-      await prisma.usuario.update({
+      const user = await prisma.usuario.update({
         where: { email },
         data: { senha_hash },
       });
 
-      return reply.code(200).send({ message: "Senha atualizada com sucesso" });
+      if (!user) {
+        return reply.code(404).send({ error: "User not found" });
+      }
+
+      return reply.code(200).send({ message: "Password updated successfully" });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return reply.code(400).send({ error: error.errors });
@@ -51,21 +50,4 @@ export async function resetPasswordWithToken(app: FastifyInstance) {
       return reply.code(500).send({ error: "Internal Server Error" });
     }
   });
-}
-
-// Função para verificar se o token JWT é válido
-async function verifyToken(token: string, email: string): Promise<boolean> {
-  const SECRET_KEY = "beabaaleatorio"; // Defina sua chave secreta aqui
-
-  try {
-    const payload = jwt.verify(token, SECRET_KEY) as { email: string };
-    return payload.email === email;
-  } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      console.log("Token expirado:", error.message);
-    } else if (error instanceof jwt.JsonWebTokenError) {
-      console.log("Token inválido:", error.message);
-    }
-    return false;
-  }
 }
