@@ -52,6 +52,7 @@ export async function getUsers(app: FastifyInstance) {
       }
     }
   );
+
   app.get(
     "/users/report",
     { onRequest: [verifyJWT] },

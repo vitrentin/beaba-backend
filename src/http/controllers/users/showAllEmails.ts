@@ -2,7 +2,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-
 export async function getUsersMail(app: FastifyInstance) {
   app.post("/emails", async (request, reply) => {
     const getEmailBody = z.object({
